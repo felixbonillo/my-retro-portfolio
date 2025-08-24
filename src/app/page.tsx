@@ -1,15 +1,19 @@
- import React from "react";
+import React from "react";
 
 export default function Home() {
   return (
-    // Contenedor principal para la interfaz de la terminal
-    // Ocupara toda la pantalla con fondo negro y el color del texto de la terminal
     <div className="bg-black text-[#00ff41] h-screen w-full p-4 md:p-8 overflow-hidden flex flex-col">
-      {/* 
-      Overlay para el efecto de monitor CRT
-      */}
-      <div className="fixed inset-0 z-10 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.7) 1px, transparent 1px)', backgroundSize: '1px 2px', animation: 'glitch 0.2s infinite', filter: 'saturate(1.5) constrast(1.2)' }}></div>
-      
+      {/* Overlay para el efecto de monitor CRT*/}
+      <div
+        className="fixed inset-0 z-10 pointer-events-none opacity-20 crt-overlay-glitch"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0, 0, 0, 0.7) 1px, transparent 1px)",
+          backgroundSize: "1px 2px",
+          filter: "saturate(1.5) constrast(1.2)",
+        }}
+      ></div>
+
       {/* Area de la terminal, donde apareceranb los mensajes 
           'overflow-y-auto' permite hacer scroll
           'whitespace-pre-wrap' respeta los salos de linea para el texto
@@ -23,7 +27,14 @@ export default function Home() {
         <p>Bienvenido a mi portafolio. Para empezar, escribe &#39;help&#39;.</p>
         <br />
       </div>
-
+      {/* Formulario de entrada de comandos */}
+      <div className="flex-shrink-0 flex items-center mt-2 z-20">
+        <span className="text-[#00ff41] mr-2">&gt;</span>
+        <input 
+          type="text"
+          className="bg-transparent border-none outline-none text-[#00ff41] flex-1 caret-current autofocus"
+        />
+      </div>
     </div>
   );
 }
