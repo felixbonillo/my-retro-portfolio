@@ -1,5 +1,22 @@
-'use client'
+"use client";
 import React, { useState, useEffect, useRef } from "react";
+
+interface Command {
+    (args: string[]): { type: "response" | "command"; text: string };
+}
+
+//Definimos comnando y sus repuesta como un objeto para hacerlo dinamico
+
+const commands: { [key: string]: (args: string[]) => string } = {
+    help: () =>
+        "Comandos disponibles: \n- about: Sobre mi \n- projects: Ver proyectos\n- contact: Contactame\n- clear: Limpiar la terminal",
+    about: () =>
+        "Soy Félix Bonillo, desarrollador frontend junior. Mis tecnologías principales son React, Next.js y Tailwind CSS. Siempre buscando aprender y crecer.",
+    projects: () => "Cargando proyectos ...",
+    contact: () =>
+        "Puedes contactarme en:\n- Correo: felixbdev@gmail.com\n- LinkedIn: linkedin.com/in/felix-bonillo-b9368936b\n- WhatsApp: +584242105019",
+    clear: () => "",
+};
 
 //Componente para encapsular toda la logica y la UI de la terminal
 export default function Terminal() {
@@ -49,84 +66,63 @@ export default function Terminal() {
 
     const handleCommand = (e: React.FormEvent) => {
         e.preventDefault();
-        const command = input.toLowerCase().trim();
+        const [command, ...args] = input.toLowerCase().trim().split(" ");
         if (!command) return; // Ignora entradas vacias
 
-        setHistory((prev) => [...prev, { type: "command", text: `> ${input}`}]);
+        //Comando del usuario al historial
+        setHistory((prev) => [...prev, { type: "command", text: `> ${input}` }]);
 
-        switch (command) {
-            case "help":
-                setHistory((prev) => [
-                    ...prev,
-                    {
-                        type: "response",
-                        text: "Comandos disponibles: \n- about: Sobre mi \n- projects: Ver proyectos\n- contact: Contactame\n- clear: Limpiar la terminal",
-                    },
-                ]);
-                break;
-            case "about":
-                setHistory((prev) => [
-                    ...prev,
-                    {
-                        type: "response",
-                        text: "Soy Félix Bonillo, desarrollador frontend junior. Mis tecnologías principales son React, Next.js y Tailwind CSS. Siempre buscando aprender y crecer.",
-                    },
-                ]);
-                break;
-            case "projects":
-                setHistory((prev) => [
-                    ...prev,
-                    { type: "response", text: "Cargando proyectos ..." },
-                ]);
-                break;
-            case "contact":
-                setHistory((prev) => [
-                    ...prev,
-                    {
-                        type: "response",
-                        text: "Puedes contactarme en:\n- Correo: felixbdev@gmail.com\n- LinkedIn: linkedin.com/in/felix-bonillo-b9368936b\n- WhatsApp: +584242105019",
-                    },
-                ]);
-                break;
-            case "clear":
-                setHistory([]);
-                break;
-            default:
-                setHistory((prev) => [
-                    ...prev,
-                    {
-                        type: "response",
-                        text: `Comando no reconocido: '${input}'. Escribe 'help' para ver los comandos.`,
-                    },
-                ]);
-                break;
+        //Verificamos si el comando existe en nuestro objeto de comandos
+        const commandFunc = commands[command];
+
+        if (command === "clear") {
+            //Si el comando es clear limpiamos el historial
+            setHistory([]);
+        } else if (commandFunc) {
+            //Si el comando existe ejecutamos la funcion asociada y agregamos la respuesta
+            const response = commandFunc(args);
+            setHistory((prev) => [...prev, { type: "response", text: response }]);
+        } else {
+            //Si el comando no existe, mostramos un mensaje de error
+            setHistory((prev) => [
+                ...prev,
+                {
+                    type: "response",
+                    text: `Comando no reconocido: '${command}'. Escribe 'help' para ver los comandos.`,
+                },
+            ]);
         }
-        setInput(""); // Limpia el input despues de procesar el comando
-    }
+        //Limpia el input para el siguiente comando
+        setInput("");
+    };
 
     return (
-        <div className="bg-black text-[#00ff41] h-screen w-full p-4 md:p-8 overflow-hidden flex flex-col">
-            <div className="fixed inset-0 z-10 pointer-events-none opacity-20" style={{
-                backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.7) 1px, transparent 1px)',
-                backgroundSize: '1px 2px',
-                animation: 'glitch 0.2s infinite',
-                filter: 'saturate(1.5) contrast(1.2)'
-            }}></div>
-
-            <div ref={terminalRef} className="flex-1 overflow-y-auto pr-2 z-20 whitespace-pre-wrap leading-tight">
+        <div className="flex flex-col h-full w-full">
+            <div
+                ref={terminalRef}
+                className="flex-1 overflow-y-auto pr-2 z-20 whitespace-pre-wrap leading-tight"
+            >
                 <div className="typed-text">
                     {typedText}
                     <span className="animate-pulse">_</span>
                 </div>
 
                 {history.map((entry, index) => (
-                    <div key={index} className={entry.type === 'command' ? 'text-green-400' : 'text-gray-300'}>
+                    <div
+                        key={index}
+                        className={
+                            entry.type === "command" ? "text-green-400" : "text-gray-300"
+                        }
+                    >
                         {entry.text}
                     </div>
                 ))}
             </div>
 
-            <form onSubmit={handleCommand} className="flex-shrink-0 flex items-center mt-2 z-20">
+            <form
+                onSubmit={handleCommand}
+                className="flex-shrink-0 flex items-center mt-2 z-20"
+            >
                 <span className="text-green-400 mr-2">&gt;</span>
                 <input
                     ref={inputRef}
@@ -137,5 +133,5 @@ export default function Terminal() {
                 />
             </form>
         </div>
-    )
-};
+    );
+}
